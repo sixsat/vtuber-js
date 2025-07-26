@@ -1,30 +1,25 @@
-import { useEffect, useRef, useCallback } from "react";
-import { faceDataRef } from "../utils/getFaceControls";
-import drawGreenPoints from "../utils/drawGreenPoints";
+import { useEffect, useRef, useCallback } from 'react';
+import { faceDataRef } from '../utils/getFaceControls';
+import drawGreenPoints from '../utils/drawGreenPoints';
 
 export default function useFaceDetection(
   model,
   videoRef,
   canvasRef,
   videoReady,
-  drawGreenPointsEnabled = false
+  drawGreenPointsEnabled = false,
 ) {
   const animationFrameId = useRef(null);
 
   const detectFaces = useCallback(async () => {
-    if (
-      !model ||
-      !videoRef.current ||
-      !videoReady ||
-      videoRef.current.readyState !== 4
-    ) {
+    if (!model || !videoRef.current || !videoReady || videoRef.current.readyState !== 4) {
       return;
     }
 
     try {
       const faces = await model.estimateFaces(videoRef.current);
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (faces.length > 0) {
@@ -36,7 +31,7 @@ export default function useFaceDetection(
           for (const point of faceDataRef.current) {
             ctx.beginPath();
             ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
-            ctx.fillStyle = "lime";
+            ctx.fillStyle = 'lime';
             ctx.fill();
           }
         }
@@ -44,7 +39,7 @@ export default function useFaceDetection(
         faceDataRef.current = null;
       }
     } catch (err) {
-      console.error("Face detection failed:", err);
+      console.error('Face detection failed:', err);
     }
 
     animationFrameId.current = requestAnimationFrame(detectFaces);

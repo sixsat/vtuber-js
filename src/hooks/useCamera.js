@@ -1,9 +1,4 @@
-export default function useCamera(
-  videoRef,
-  setVideoReady,
-  setErrMsg,
-  canvasRef
-) {
+export default function useCamera(videoRef, setVideoReady, setErrMsg, canvasRef) {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -15,18 +10,18 @@ export default function useCamera(
 
         const onPlaying = () => {
           setVideoReady(true);
-          videoRef.current.removeEventListener("playing", onPlaying);
+          videoRef.current.removeEventListener('playing', onPlaying);
         };
-        videoRef.current.addEventListener("playing", onPlaying);
+        videoRef.current.addEventListener('playing', onPlaying);
       }
-      setErrMsg("");
+      setErrMsg('');
     } catch (err) {
-      if (err.name === "NotAllowedError") {
-        setErrMsg("Permission denied: Please allow camera access.");
-      } else if (err.name === "NotFoundError") {
-        setErrMsg("No camera device found.");
+      if (err.name === 'NotAllowedError') {
+        setErrMsg('Permission denied: Please allow camera access.');
+      } else if (err.name === 'NotFoundError') {
+        setErrMsg('No camera device found.');
       } else {
-        setErrMsg("Error accessing webcam");
+        setErrMsg('Error accessing webcam');
       }
       console.error(err);
     }
@@ -39,7 +34,7 @@ export default function useCamera(
     }
 
     if (canvasRef?.current) {
-      const ctx = canvasRef.current.getContext("2d");
+      const ctx = canvasRef.current.getContext('2d');
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     }
   };

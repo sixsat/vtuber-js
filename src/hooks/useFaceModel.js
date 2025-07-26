@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import * as faceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
+import { useEffect, useState } from 'react';
+import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 
 export default function useFaceModel(isCameraOn) {
   const [model, setModel] = useState(null);
-  const [errMsg, setErrMsg] = useState("");
+  const [errMsg, setErrMsg] = useState('');
 
   useEffect(() => {
     if (!isCameraOn) {
@@ -15,15 +15,15 @@ export default function useFaceModel(isCameraOn) {
         const loadedModel = await faceLandmarksDetection.createDetector(
           faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
           {
-            runtime: "mediapipe",
-            solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+            runtime: 'mediapipe',
+            solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
             maxFaces: 1,
-          }
+          },
         );
         setModel(loadedModel);
-        setErrMsg("");
+        setErrMsg('');
       } catch (err) {
-        setErrMsg("Failed to load face mesh model");
+        setErrMsg('Failed to load face mesh model');
         console.error(err);
       }
     };

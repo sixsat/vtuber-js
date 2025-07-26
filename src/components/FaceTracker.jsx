@@ -1,7 +1,7 @@
-import { useRef, useState } from "react";
-import useFaceModel from "../hooks/useFaceModel";
-import useCamera from "../hooks/useCamera";
-import useFaceDetection from "../hooks/useFaceDetection";
+import { useRef, useState } from 'react';
+import useFaceModel from '../hooks/useFaceModel';
+import useCamera from '../hooks/useCamera';
+import useFaceDetection from '../hooks/useFaceDetection';
 
 function FaceTracker() {
   const videoRef = useRef(null);
@@ -10,12 +10,7 @@ function FaceTracker() {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const { model, errMsg, setErrMsg } = useFaceModel(isCameraOn);
-  const { startCamera, stopCamera } = useCamera(
-    videoRef,
-    setVideoReady,
-    setErrMsg,
-    canvasRef
-  );
+  const { startCamera, stopCamera } = useCamera(videoRef, setVideoReady, setErrMsg, canvasRef);
   useFaceDetection(model, videoRef, canvasRef, videoReady, true);
 
   const toggleCamera = () => {
@@ -35,14 +30,13 @@ function FaceTracker() {
         style={{
           width: 640,
           height: 480,
-          border: "1px solid #ccc",
-          borderRadius: "8px",
-          backgroundImage: videoReady ? "none" : 'url("/placeholder.jpg")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          position: "relative",
-        }}
-      >
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          backgroundImage: videoReady ? 'none' : 'url("/placeholder.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'relative',
+        }}>
         <video
           ref={videoRef}
           autoPlay
@@ -52,10 +46,10 @@ function FaceTracker() {
           height={480}
           className="webcam"
           style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            borderRadius: "8px",
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '8px',
           }}
         />
         <canvas
@@ -63,26 +57,23 @@ function FaceTracker() {
           width={640}
           height={480}
           style={{
-            position: "absolute",
+            position: 'absolute',
             top: 0,
             left: 0,
-            pointerEvents: "none",
+            pointerEvents: 'none',
           }}
         />
       </div>
       {errMsg && (
-        <p className="error-msg" style={{ color: "red" }}>
+        <p className="error-msg" style={{ color: 'red' }}>
           {errMsg}
         </p>
       )}
-      <div style={{ color: model ? "green" : "red", fontWeight: "bold" }}>
-        {model ? "Face Mesh Model Loaded" : "Model not loaded"}
+      <div style={{ color: model ? 'green' : 'red', fontWeight: 'bold' }}>
+        {model ? 'Face Mesh Model Loaded' : 'Model not loaded'}
       </div>
-      <button
-        onClick={toggleCamera}
-        style={{ margin: "10px", marginBottom: "10px" }}
-      >
-        {isCameraOn ? "Stop Camera" : "Start Camera"}
+      <button onClick={toggleCamera} style={{ margin: '10px', marginBottom: '10px' }}>
+        {isCameraOn ? 'Stop Camera' : 'Start Camera'}
       </button>
     </div>
   );
