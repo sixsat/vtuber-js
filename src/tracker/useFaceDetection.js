@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
-import { faceDataRef } from "./getFaceData";
+import { faceDataRef } from "./getFaceControls";
 import drawGreenPoints from "./drawGreenPoints";
 
 export default function useFaceDetection(
