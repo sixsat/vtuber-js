@@ -1,10 +1,17 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
+#canvas-container {
+  width: 100%;
+  margin: 0 auto;
+  border: 1px solid #FF0000;
+}
+
+#avatar-canvas {
+  background-color: #eeeeee;
+}
 .logo {
   height: 6em;
   padding: 1.5em;
