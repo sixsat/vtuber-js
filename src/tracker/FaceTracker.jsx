@@ -1,11 +1,38 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import * as faceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
+import "@tensorflow/tfjs-backend-webgl";
 
 function FaceTracker() {
   const videoRef = useRef(null);
-  const streamRef = useRef(null);
+  const [model, setModel] = useState(null);
   const [errMsg, setErrMsg] = useState("");
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+
+  useEffect(() => {
+    if (isCameraOn) {
+      const loadModel = async () => {
+        try {
+          const loadedModel = await faceLandmarksDetection.createDetector(
+            faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
+            {
+              runtime: "mediapipe",
+              solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+              maxFaces: 1,
+            }
+          );
+          setModel(loadedModel);
+          setErrMsg("");
+        } catch (err) {
+          setErrMsg("Failed to load face mesh model");
+          console.error(err);
+        }
+      };
+      loadModel();
+    } else {
+      setModel(null);
+    }
+  }, [isCameraOn]);
 
   const startCamera = async () => {
     try {
@@ -16,7 +43,6 @@ function FaceTracker() {
       if (videoRef.current) {
         setVideoReady(false);
         videoRef.current.srcObject = stream;
-        streamRef.current = stream;
 
         const onPlaying = () => {
           setVideoReady(true);
@@ -26,21 +52,25 @@ function FaceTracker() {
       }
       setErrMsg("");
     } catch (err) {
-      setErrMsg("Error accessing webcam");
+      if (err.name === "NotAllowedError") {
+        setErrMsg("Permission denied: Please allow camera access.");
+      } else if (err.name === "NotFoundError") {
+        setErrMsg("No camera device found.");
+      } else {
+        setErrMsg("Error accessing webcam");
+      }
       console.error(err);
     }
   };
 
   const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
     setIsCameraOn(false);
     setVideoReady(false);
+    setModel(null);
   };
 
   const toggleCamera = () => {
@@ -87,6 +117,9 @@ function FaceTracker() {
           {errMsg}
         </p>
       )}
+      <div style={{ color: model ? "green" : "red", fontWeight: "bold" }}>
+        {model ? "Face Mesh Model Loaded" : "Model not loaded"}
+      </div>
       <button
         onClick={toggleCamera}
         style={{ margin: "10px", marginBottom: "10px" }}
