@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import useFaceModel from "./useFaceModel";
-import useCamera from "./useCamera";
-import useFaceDetection from "./useFaceDetection";
+import useFaceModel from "../hooks/useFaceModel";
+import useCamera from "../hooks/useCamera";
+import useFaceDetection from "../hooks/useFaceDetection";
 
 function FaceTracker() {
   const videoRef = useRef(null);
@@ -10,7 +10,12 @@ function FaceTracker() {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const { model, errMsg, setErrMsg } = useFaceModel(isCameraOn);
-  const { startCamera, stopCamera } = useCamera(videoRef, setVideoReady, setErrMsg, canvasRef);
+  const { startCamera, stopCamera } = useCamera(
+    videoRef,
+    setVideoReady,
+    setErrMsg,
+    canvasRef
+  );
   useFaceDetection(model, videoRef, canvasRef, videoReady, true);
 
   const toggleCamera = () => {

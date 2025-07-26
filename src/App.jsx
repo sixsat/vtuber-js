@@ -1,5 +1,5 @@
 import "./App.css";
-import FaceTracker from "./tracker/FaceTracker";
+import FaceTracker from "./components/FaceTracker";
 
 function App() {
   return (

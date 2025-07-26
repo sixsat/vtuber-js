@@ -1,9 +1,5 @@
 export const faceDataRef = { current: null };
 
-export function getFaceData() {
-  return faceDataRef.current;
-}
-
 export function getFaceControls() {
   const kp = faceDataRef.current;
   if (!kp) return null;
