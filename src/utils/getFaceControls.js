@@ -1,5 +1,11 @@
 export const faceDataRef = { current: null };
 
+const getEAR = (top, bottom, left, right) => {
+  const vertical = Math.hypot(top.y - bottom.y);
+  const horizontal = Math.hypot(left.x - right.x);
+  return vertical / horizontal;
+};
+
 export function getFaceControls() {
   const kp = faceDataRef.current;
   if (!kp) return null;
@@ -30,10 +36,15 @@ export function getFaceControls() {
   const dzPitch = chin.z - midEyes.z;
   const pitch = Math.atan2(dyPitch, dzPitch) * (180 / Math.PI);
 
+  const leftEAR = getEAR(kp[159], kp[145], kp[33], kp[133]);
+  const rightEAR = getEAR(kp[386], kp[374], kp[362], kp[263]);
+  const blink = (leftEAR + rightEAR) / 2 < 0.22;
+
   return {
     position,
     mouthOpen,
     yaw,
     pitch,
+    blink,
   };
 }

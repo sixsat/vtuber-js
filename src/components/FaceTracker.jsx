@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import useFaceModel from '../hooks/useFaceModel';
 import useCamera from '../hooks/useCamera';
 import useFaceDetection from '../hooks/useFaceDetection';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 function FaceTracker() {
   const videoRef = useRef(null);
@@ -9,7 +11,7 @@ function FaceTracker() {
 
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
-  const { model, errMsg, setErrMsg } = useFaceModel(isCameraOn);
+  const { model, setErrMsg } = useFaceModel(isCameraOn);
   const { startCamera, stopCamera } = useCamera(videoRef, setVideoReady, setErrMsg, canvasRef);
   useFaceDetection(model, videoRef, canvasRef, videoReady, true);
 
@@ -25,17 +27,13 @@ function FaceTracker() {
   };
 
   return (
-    <div className="face-tracker">
+    <div className="flex flex-col items-center gap-2">
       <div
+        className="relative w-[200px] h-[150px] rounded-2xl overflow-hidden border border-gray-300 shadow-lg"
         style={{
-          width: 640,
-          height: 480,
-          border: '1px solid #ccc',
-          borderRadius: '8px',
           backgroundImage: videoReady ? 'none' : 'url("/placeholder.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          position: 'relative',
         }}>
         <video
           ref={videoRef}
@@ -44,36 +42,26 @@ function FaceTracker() {
           playsInline
           width={640}
           height={480}
-          className="webcam"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            borderRadius: '8px',
-          }}
+          className="w-full h-full object-cover"
         />
         <canvas
           ref={canvasRef}
           width={640}
           height={480}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-          }}
+          className="absolute top-0 left-0 w-full h-full pointer-events-none"
         />
       </div>
-      {errMsg && (
-        <p className="error-msg" style={{ color: 'red' }}>
-          {errMsg}
-        </p>
-      )}
-      <div style={{ color: model ? 'green' : 'red', fontWeight: 'bold' }}>
-        {model ? 'Face Mesh Model Loaded' : 'Model not loaded'}
-      </div>
-      <button onClick={toggleCamera} style={{ margin: '10px', marginBottom: '10px' }}>
-        {isCameraOn ? 'Stop Camera' : 'Start Camera'}
+      <button
+        onClick={toggleCamera}
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition
+            ${
+              isCameraOn
+                ? 'bg-gray-700 text-white shadow-[0_0_10px_rgba(255,255,255,0.3)]'
+                : 'bg-black text-white shadow-[0_0_10px_rgba(255,255,255,0.6)]'
+            }
+            hover:scale-105`}
+        aria-label={isCameraOn ? 'Stop Camera' : 'Start Camera'}>
+        <FontAwesomeIcon icon={faUser} />
       </button>
     </div>
   );
