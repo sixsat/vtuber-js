@@ -2,6 +2,8 @@
 
 Turns your face into an anime avatar right in the browser. Using real-time face detection from your webcam to brings your expressions to life. Runs entirely in your browser (100% client-side) with facial landmark detection.
 
+**Please remove your glasses for better experience.**
+
 ## 🚀 Live Demo
 
 > `https://sixsat.github.io/vtuber-js/`
@@ -64,3 +66,9 @@ vtuber-js/
 - 3D models selection
 - Full-body motion capture
 - Real time voice changer
+
+## 🤝 Team member
+
+- https://github.com/STaninnat (https://www.boot.dev/u/powderhumblegod)
+- https://github.com/derflohwalzer (https://www.boot.dev/u/studiousarmy23)
+- https://github.com/sixsat (https://www.boot.dev/u/widethicc69)
