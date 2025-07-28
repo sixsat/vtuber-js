@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { getVisemeFromLandmarks } from './getVisemeFromLandmarks.js';
 
 export const faceDataRef = { current: null };
 
 let smoothEyeLeft = 0;
 let smoothEyeRight = 0;
 let smoothMouthOpen = 0;
+let smoothViseme = { A: 0, I: 0, U: 0, E: 0, O: 0 };
 
 const getEAR = (top, bottom, left, right) => {
   const vertical = Math.hypot(top.x - bottom.x, top.y - bottom.y);
@@ -52,7 +54,13 @@ export function getFaceControls() {
   smoothMouthOpen = smoothMouthOpen * (1 - smoothing) + normalizedMouth * smoothing;
   if (smoothMouthOpen < 0.02) smoothMouthOpen = 0;
 
-  // console.log('mouth diff:', rawDiff);
+  const rawViseme = getVisemeFromLandmarks(kp);
+  if (!rawViseme) return null;
+
+  const vSmooth = 0.25;
+  for (const k in smoothViseme) {
+    smoothViseme[k] = smoothViseme[k] * (1 - vSmooth) + rawViseme[k] * vSmooth;
+  }
 
   // Head Rotation
   const dx = rightEye.x - leftEye.x;
@@ -78,6 +86,7 @@ export function getFaceControls() {
     const ratio = (ear - min) / (max - min);
     return THREE.MathUtils.clamp(1 - ratio, 0, 1);
   };
+
   const eyeSmoothing = 0.2;
   smoothEyeLeft = smoothEyeLeft * (1 - eyeSmoothing) + normalizeEAR(leftEAR) * eyeSmoothing;
   smoothEyeRight = smoothEyeRight * (1 - eyeSmoothing) + normalizeEAR(rightEAR) * eyeSmoothing;
@@ -90,5 +99,6 @@ export function getFaceControls() {
     roll,
     eyeLeftClose: smoothEyeLeft,
     eyeRightClose: smoothEyeRight,
+    viseme: smoothViseme,
   };
 }
