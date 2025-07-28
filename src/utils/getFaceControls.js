@@ -6,6 +6,11 @@ let smoothEyeLeft = 0;
 let smoothEyeRight = 0;
 let smoothMouthOpen = 0;
 
+// For debounce viseme
+let lastViseme = null;
+let visemeHoldFrames = 0;
+const HOLD_THRESHOLD = 5;
+
 const getEAR = (top, bottom, left, right) => {
   const vertical = Math.hypot(top.x - bottom.x, top.y - bottom.y);
   const horizontal = Math.hypot(left.x - right.x, left.y - right.y);
@@ -28,16 +33,17 @@ export function getFaceControls() {
   const chin = kp[152];
   const mouthUpper = kp[13];
   const mouthLower = kp[14];
+  const leftMouth = kp[61];
+  const rightMouth = kp[291];
   const faceTop = kp[10];
-  const faceBottom = kp[152];
 
-  if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin) {
+  if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin || !faceTop) {
     return null;
   }
 
   const position = nose;
 
-  const faceHeight = Math.abs(faceBottom.y - faceTop.y);
+  const faceHeight = Math.abs(faceTop.y - chin.y);
 
   const rawDiff = Math.abs(mouthUpper.y - mouthLower.y);
   const mouthRatio = rawDiff / faceHeight;
@@ -80,6 +86,39 @@ export function getFaceControls() {
   smoothEyeLeft = smoothEyeLeft * (1 - eyeSmoothing) + normalizeEAR(leftEAR) * eyeSmoothing;
   smoothEyeRight = smoothEyeRight * (1 - eyeSmoothing) + normalizeEAR(rightEAR) * eyeSmoothing;
 
+  // ✅ Viseme Estimation
+  const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
+  const visemeRatio = rawDiff / mouthWidth;
+  let newViseme = null;
+
+  if (window.__testViseme) {
+    console.log(`🎯 Viseme ${window.__testViseme}:`, {
+      visemeRatio: visemeRatio.toFixed(3),
+      smoothMouthOpen: smoothMouthOpen.toFixed(3),
+    });
+  }
+
+  if (smoothMouthOpen > 0.05) {
+    if (visemeRatio > 0.58 && smoothMouthOpen > 0.35) newViseme = 'A';
+    else if (visemeRatio < 0.3 && smoothMouthOpen > 0.3) newViseme = 'I';
+    else if (visemeRatio >= 0.32 && visemeRatio < 0.45 && smoothMouthOpen > 0.3) newViseme = 'E';
+    else if (visemeRatio < 0.4 && smoothMouthOpen > 0.45) newViseme = 'U';
+    else if (visemeRatio < 0.5 && smoothMouthOpen > 0.6) newViseme = 'O';
+  }
+
+  // 👇 Debounce viseme เปลี่ยนทุก 5 frame เท่านั้น
+  if (newViseme !== lastViseme) {
+    if (visemeHoldFrames > HOLD_THRESHOLD) {
+      lastViseme = newViseme;
+      visemeHoldFrames = 0;
+    } else {
+      visemeHoldFrames++;
+      newViseme = lastViseme;
+    }
+  } else {
+    visemeHoldFrames = 0;
+  }
+
   return {
     position,
     mouthOpen: smoothMouthOpen,
@@ -88,5 +127,6 @@ export function getFaceControls() {
     roll,
     eyeLeftClose: smoothEyeLeft,
     eyeRightClose: smoothEyeRight,
+    viseme: newViseme,
   };
 }

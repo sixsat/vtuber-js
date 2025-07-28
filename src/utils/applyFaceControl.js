@@ -20,8 +20,21 @@ export function applyFaceControlsToMesh(vrm, controls) {
       }
 
       // Mouth
-      if ('Fcl_MTH_A' in dict) {
-        influences[dict['Fcl_MTH_A']] = mouthOpen;
+      // if ('Fcl_MTH_A' in dict) {
+      //   influences[dict['Fcl_MTH_A']] = mouthOpen;
+      // }
+
+      if (controls.viseme) {
+        const v = controls.viseme;
+        ['A', 'I', 'U', 'E', 'O'].forEach((char) => {
+          if (dict[`Fcl_MTH_${char}`] !== undefined) {
+            influences[dict[`Fcl_MTH_${char}`]] = char === v ? 1 : 0;
+          }
+        });
+      } else {
+        if ('Fcl_MTH_A' in dict) {
+          influences[dict['Fcl_MTH_A']] = mouthOpen;
+        }
       }
     }
   });
