@@ -32,7 +32,7 @@ function FaceTracker() {
       <div
         className="relative w-[200px] h-[150px] rounded-2xl overflow-hidden border border-gray-300 shadow-lg"
         style={{
-          backgroundImage: videoReady ? 'none' : 'url("/placeholder.jpg")',
+          backgroundImage: videoReady ? 'none' : 'url("/vtuber-js/placeholder.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>
