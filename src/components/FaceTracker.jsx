@@ -3,7 +3,7 @@ import useFaceModel from '../hooks/useFaceModel';
 import useCamera from '../hooks/useCamera';
 import useFaceDetection from '../hooks/useFaceDetection';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { faVideo } from '@fortawesome/free-solid-svg-icons';
 
 function FaceTracker() {
   const videoRef = useRef(null);
@@ -11,6 +11,7 @@ function FaceTracker() {
 
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+
   const { model, setErrMsg } = useFaceModel(isCameraOn);
   const { startCamera, stopCamera } = useCamera(videoRef, setVideoReady, setErrMsg, canvasRef);
   useFaceDetection(model, videoRef, canvasRef, videoReady, true);
@@ -61,7 +62,7 @@ function FaceTracker() {
             }
             hover:scale-105`}
         aria-label={isCameraOn ? 'Stop Camera' : 'Start Camera'}>
-        <FontAwesomeIcon icon={faUser} />
+        <FontAwesomeIcon icon={faVideo} />
       </button>
     </div>
   );

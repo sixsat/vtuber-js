@@ -1,9 +1,7 @@
-import * as THREE from 'three';
-
 export function applyFaceControlsToMesh(vrm, controls) {
   const { eyeLeftClose, eyeRightClose } = controls;
 
-  // ✅ Apply to blend shape by mesh
+  // Apply to blend shape by mesh
   vrm.scene.traverse((obj) => {
     if (obj.isMesh && obj.morphTargetDictionary && obj.morphTargetInfluences) {
       const dict = obj.morphTargetDictionary;

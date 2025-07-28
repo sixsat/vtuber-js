@@ -36,7 +36,7 @@ export function getFaceControls() {
   const position = nose;
   const smoothing = 0.2;
 
-  // ✅ mouthOpen (normalized)
+  // mouthOpen (normalized)
   const threshold = 0.02;
   const rawDiff = Math.abs(mouthUpper.y - mouthLower.y);
   const mouthOpenRaw = rawDiff < threshold ? 0 : Math.min((rawDiff - threshold) / 0.18, 1);
@@ -44,7 +44,7 @@ export function getFaceControls() {
   smoothMouthOpen = smoothMouthOpen * (1 - smoothing) + mouthOpenRaw * smoothing;
   if (smoothMouthOpen < 0.01) smoothMouthOpen = 0;
 
-  // ✅ head rotation
+  // head rotation
   const dx = rightEye.x - leftEye.x;
   const dy = rightEye.y - leftEye.y;
   const yaw = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -58,7 +58,7 @@ export function getFaceControls() {
   const dzRoll = chin.z - midEyes.z;
   const roll = Math.atan2(dxRoll, dzRoll) * (180 / Math.PI);
 
-  // ✅ Eye Aspect Ratio (EAR) per side
+  // Eye Aspect Ratio (EAR) per side
   const leftEAR = getEAR(kp[159], kp[145], kp[33], kp[133]);
   const rightEAR = getEAR(kp[386], kp[374], kp[362], kp[263]);
 

@@ -40,7 +40,7 @@ export default function AvatarModel() {
         //   }
         // });
       },
-      undefined,
+      null,
       (error) => {
         console.error('Error loading VRM:', error);
       },
