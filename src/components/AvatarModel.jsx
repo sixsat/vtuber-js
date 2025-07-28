@@ -24,9 +24,9 @@ export default function AvatarModel() {
         }
 
         // Model adjustment
-        vrm.scene.scale.set(6, 6, 6);
-        vrm.scene.position.set(0, -13.8, 0);
-        vrm.scene.rotation.set(-0.78, 0, 0);
+        vrm.scene.scale.set(1, 1, 1);
+        vrm.scene.position.set(0, 0, 0);
+        vrm.scene.rotation.set(0, 0, 0);
 
         // Fold arms
         setArmsAngle(vrm, 65);
