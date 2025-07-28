@@ -5,6 +5,9 @@ export const faceDataRef = { current: null };
 let smoothEyeLeft = 0;
 let smoothEyeRight = 0;
 let smoothMouthOpen = 0;
+let smoothroll = 0;
+let smoothpitch = 0;
+let smoothyaw = 0;
 
 const getEAR = (top, bottom, left, right) => {
   const vertical = Math.hypot(top.x - bottom.x, top.y - bottom.y);
@@ -36,6 +39,7 @@ export function getFaceControls() {
   }
 
   const position = nose;
+  
 
   const faceHeight = Math.abs(faceBottom.y - faceTop.y);
 
@@ -53,18 +57,29 @@ export function getFaceControls() {
   // console.log('mouth diff:', rawDiff);
 
   // Head Rotation
+  const smoothyawcoefficient = 0.1;
   const dx = rightEye.x - leftEye.x;
   const dy = rightEye.y - leftEye.y;
-  const yaw = Math.atan2(dy, dx) * (180 / Math.PI);
+  const yaw = Math.atan2(dy, dx);
+  smoothyaw = smoothyaw * (1 - smoothyawcoefficient) + yaw * smoothyawcoefficient;
 
+
+
+  const smoothpitchcoefficient = 0.1;
   const midEyes = getAvg(leftEye, rightEye);
   const dyPitch = chin.y - midEyes.y;
   const dzPitch = chin.z - midEyes.z;
-  const pitch = Math.atan2(dyPitch, dzPitch) * (180 / Math.PI);
+  const pitch = Math.atan2(dyPitch, dzPitch);
+  smoothpitch = smoothpitch * (1 - smoothpitchcoefficient) + pitch * smoothpitchcoefficient;
 
+  const smoothrollcoefficient = 0.05;
   const dxRoll = chin.x - midEyes.x;
   const dzRoll = chin.z - midEyes.z;
-  const roll = Math.atan2(dxRoll, dzRoll) * (180 / Math.PI);
+  const roll = Math.atan2(dxRoll, dzRoll);
+  let new_smoothroll = smoothroll * (1 - smoothrollcoefficient) + roll * smoothrollcoefficient;
+  if (Math.abs(smoothroll - new_smoothroll) < 0.5) {
+    smoothroll = new_smoothroll;
+  }
 
   // Eye Aspect Ratio (EAR) per side
   const leftEAR = getEAR(kp[159], kp[145], kp[33], kp[133]);
@@ -83,9 +98,9 @@ export function getFaceControls() {
   return {
     position,
     mouthOpen: smoothMouthOpen,
-    yaw,
-    pitch,
-    roll,
+    yaw: smoothyaw,
+    pitch: smoothpitch,
+    roll: smoothroll,
     eyeLeftClose: smoothEyeLeft,
     eyeRightClose: smoothEyeRight,
   };

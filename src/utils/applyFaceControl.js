@@ -3,7 +3,9 @@ export function applyFaceControlsToMesh(vrm, controls) {
     return;
   }
 
-  const { mouthOpen, eyeLeftClose, eyeRightClose } = controls;
+  const { mouthOpen, eyeLeftClose, eyeRightClose, yaw, pitch, roll, position } = controls;
+  
+
 
   // Apply to blend shape by mesh
   vrm.scene.traverse((obj) => {
@@ -22,6 +24,19 @@ export function applyFaceControlsToMesh(vrm, controls) {
       // Mouth
       if ('Fcl_MTH_A' in dict) {
         influences[dict['Fcl_MTH_A']] = mouthOpen;
+      }
+
+      // Rotate and translate
+      // console.log(obj);
+
+      const head = vrm.humanoid.getNormalizedBoneNode('head');
+
+      if (head) {
+        head.rotation.set(
+          Math.cos(pitch), // Math.cos(roll), 
+          - Math.sin(roll) / 2,
+          Math.sin(yaw)
+        );
       }
     }
   });
