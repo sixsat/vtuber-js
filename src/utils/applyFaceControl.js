@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export function applyFaceControlsToMesh(vrm, controls) {
   if (!vrm || !controls) return;
 
-  const { mouthOpen, eyeLeftClose, eyeRightClose, viseme } = controls;
+  const { mouthOpen, eyeLeftClose, eyeRightClose, yaw, pitch, roll, viseme } = controls;
 
   vrm.scene.traverse((obj) => {
     if (obj.isMesh && obj.morphTargetDictionary && obj.morphTargetInfluences) {
@@ -26,6 +26,13 @@ export function applyFaceControlsToMesh(vrm, controls) {
         if (shapeName in dict) {
           influences[dict[shapeName]] = viseme[key];
         }
+      }
+
+      // Rotate and translate
+      const head = vrm.humanoid.getNormalizedBoneNode('head');
+
+      if (head) {
+        head.rotation.set(Math.cos(pitch), -Math.sin(roll) / 2, Math.sin(yaw));
       }
     }
   });

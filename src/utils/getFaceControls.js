@@ -7,6 +7,9 @@ let smoothEyeLeft = 0;
 let smoothEyeRight = 0;
 let smoothMouthOpen = 0;
 let smoothViseme = { A: 0, I: 0, U: 0, E: 0, O: 0 };
+let smoothroll = 0;
+let smoothpitch = 0;
+let smoothyaw = 0;
 
 const getEAR = (top, bottom, left, right) => {
   const vertical = Math.hypot(top.x - bottom.x, top.y - bottom.y);
@@ -30,29 +33,54 @@ export function getFaceControls() {
   const chin = kp[152];
   const mouthUpper = kp[13];
   const mouthLower = kp[14];
-  // const leftMouth = kp[61];
-  // const rightMouth = kp[291];
   const faceTop = kp[10];
 
   if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin || !faceTop) {
     return null;
   }
 
-  const position = nose;
+  // Head orientation calculation
+  const vLeftEye = new THREE.Vector3(leftEye.x, leftEye.y, leftEye.z);
+  const vRightEye = new THREE.Vector3(rightEye.x, rightEye.y, rightEye.z);
+  const vChin = new THREE.Vector3(chin.x, chin.y, chin.z);
+  const vTop = new THREE.Vector3(faceTop.x, faceTop.y, faceTop.z);
 
-  // Mouth open close
+  // Head axes
+  const xAxis = vRightEye.clone().sub(vLeftEye).normalize();
+  const yAxis = vChin.clone().sub(vTop).normalize();
+  const zAxis = new THREE.Vector3().crossVectors(xAxis, yAxis).normalize();
+  yAxis.copy(new THREE.Vector3().crossVectors(zAxis, xAxis).normalize());
+
+  // Rotation matrix from axes
+  const rotMat = new THREE.Matrix4();
+  rotMat.makeBasis(xAxis, yAxis, zAxis);
+
+  // Euler angles
+  const euler = new THREE.Euler().setFromRotationMatrix(rotMat, 'YXZ');
+  // Smoothing
+  const smoothCoeff = 0.04; // Even more smoothing for less jiggle
+  smoothyaw = smoothyaw * (1 - smoothCoeff) + -euler.z * smoothCoeff;
+  smoothpitch = smoothpitch * (1 - smoothCoeff) + euler.x * smoothCoeff;
+  smoothroll = smoothroll * (1 - smoothCoeff) + euler.y * smoothCoeff;
+
+  // Map axes: yaw = turn left/right, pitch = up/down, roll = tilt
+  const yaw = Math.abs(smoothyaw) < 0.01 ? 0 : smoothyaw;
+  const pitchOffset = 1.5; // calibrate head looking up/down direction in radians
+  let pitch = Math.abs(smoothpitch - pitchOffset) < 0.035 ? 0 : smoothpitch - pitchOffset;
+  let roll = smoothroll;
+
+  // Mouth
   const faceHeight = Math.abs(faceTop.y - chin.y);
-
   const rawDiff = Math.abs(mouthUpper.y - mouthLower.y);
   const mouthRatio = rawDiff / faceHeight;
-
   const threshold = 0.01;
   const mouthOpenRaw = Math.max(0, mouthRatio - threshold);
   const normalizedMouth = Math.min(mouthOpenRaw / 0.15, 1);
-
   const smoothing = 0.25;
   smoothMouthOpen = smoothMouthOpen * (1 - smoothing) + normalizedMouth * smoothing;
-  if (smoothMouthOpen < 0.02) smoothMouthOpen = 0;
+  if (smoothMouthOpen < 0.02) {
+    smoothMouthOpen = 0;
+  }
 
   const rawViseme = getVisemeFromLandmarks(kp);
   if (!rawViseme) return null;
@@ -61,20 +89,6 @@ export function getFaceControls() {
   for (const k in smoothViseme) {
     smoothViseme[k] = smoothViseme[k] * (1 - vSmooth) + rawViseme[k] * vSmooth;
   }
-
-  // Head Rotation
-  const dx = rightEye.x - leftEye.x;
-  const dy = rightEye.y - leftEye.y;
-  const yaw = Math.atan2(dy, dx) * (180 / Math.PI);
-
-  const midEyes = getAvg(leftEye, rightEye);
-  const dyPitch = chin.y - midEyes.y;
-  const dzPitch = chin.z - midEyes.z;
-  const pitch = Math.atan2(dyPitch, dzPitch) * (180 / Math.PI);
-
-  const dxRoll = chin.x - midEyes.x;
-  const dzRoll = chin.z - midEyes.z;
-  const roll = Math.atan2(dxRoll, dzRoll) * (180 / Math.PI);
 
   // Eye Aspect Ratio (EAR) per side
   const leftEAR = getEAR(kp[159], kp[145], kp[33], kp[133]);
@@ -92,7 +106,6 @@ export function getFaceControls() {
   smoothEyeRight = smoothEyeRight * (1 - eyeSmoothing) + normalizeEAR(rightEAR) * eyeSmoothing;
 
   return {
-    position,
     mouthOpen: smoothMouthOpen,
     yaw,
     pitch,
