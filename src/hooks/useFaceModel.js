@@ -18,6 +18,7 @@ export default function useFaceModel(isCameraOn) {
             runtime: 'mediapipe',
             solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
             maxFaces: 1,
+            refineLandmarks: true,
           },
         );
         setModel(loadedModel);
