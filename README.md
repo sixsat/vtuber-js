@@ -4,7 +4,7 @@ Turns your face into an anime avatar right in the browser. Using real-time face 
 
 ## 🚀 Live Demo
 
-> https://sixsat.github.io/vtuber-js/
+> `https://sixsat.github.io/vtuber-js/`
 
 1. click the video button on the bottom right
 2. allow webcam access
@@ -24,7 +24,7 @@ npm install
 npm run dev
 ```
 
-visit http://localhost:5173/vtuber-js/
+visit `http://localhost:5173/vtuber-js/`
 
 ## 💻 Technologies Used
 
@@ -37,7 +37,7 @@ visit http://localhost:5173/vtuber-js/
 
 ## 📁 Project Structure
 
-```
+```text
 vtuber-js/
 ├── eslint.config.js
 ├── index.html
