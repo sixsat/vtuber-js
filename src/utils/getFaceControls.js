@@ -25,26 +25,34 @@ export function getFaceControls() {
   const leftEye = kp[33];
   const rightEye = kp[263];
   const nose = kp[1];
+  const chin = kp[152];
   const mouthUpper = kp[13];
   const mouthLower = kp[14];
-  const chin = kp[152];
+  const faceTop = kp[10];
+  const faceBottom = kp[152];
 
   if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin) {
     return null;
   }
 
   const position = nose;
-  const smoothing = 0.2;
 
-  // mouthOpen (normalized)
-  const threshold = 0.02;
+  const faceHeight = Math.abs(faceBottom.y - faceTop.y);
+
   const rawDiff = Math.abs(mouthUpper.y - mouthLower.y);
-  const mouthOpenRaw = rawDiff < threshold ? 0 : Math.min((rawDiff - threshold) / 0.18, 1);
+  const mouthRatio = rawDiff / faceHeight;
 
-  smoothMouthOpen = smoothMouthOpen * (1 - smoothing) + mouthOpenRaw * smoothing;
-  if (smoothMouthOpen < 0.01) smoothMouthOpen = 0;
+  const threshold = 0.01;
+  const mouthOpenRaw = Math.max(0, mouthRatio - threshold);
+  const normalizedMouth = Math.min(mouthOpenRaw / 0.15, 1);
 
-  // head rotation
+  const smoothing = 0.25;
+  smoothMouthOpen = smoothMouthOpen * (1 - smoothing) + normalizedMouth * smoothing;
+  if (smoothMouthOpen < 0.02) smoothMouthOpen = 0;
+
+  // console.log('mouth diff:', rawDiff);
+
+  // Head Rotation
   const dx = rightEye.x - leftEye.x;
   const dy = rightEye.y - leftEye.y;
   const yaw = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -64,16 +72,13 @@ export function getFaceControls() {
 
   const normalizeEAR = (ear) => {
     const min = 0.1;
-    const max = 0.3;
+    const max = 0.2;
     const ratio = (ear - min) / (max - min);
     return THREE.MathUtils.clamp(1 - ratio, 0, 1);
   };
-
-  const eyeLeftClose = (smoothEyeLeft =
-    smoothEyeLeft * (1 - smoothing) + normalizeEAR(leftEAR) * smoothing);
-
-  const eyeRightClose = (smoothEyeRight =
-    smoothEyeRight * (1 - smoothing) + normalizeEAR(rightEAR) * smoothing);
+  const eyeSmoothing = 0.2;
+  smoothEyeLeft = smoothEyeLeft * (1 - eyeSmoothing) + normalizeEAR(leftEAR) * eyeSmoothing;
+  smoothEyeRight = smoothEyeRight * (1 - eyeSmoothing) + normalizeEAR(rightEAR) * eyeSmoothing;
 
   return {
     position,
@@ -81,7 +86,7 @@ export function getFaceControls() {
     yaw,
     pitch,
     roll,
-    eyeLeftClose,
-    eyeRightClose,
+    eyeLeftClose: smoothEyeLeft,
+    eyeRightClose: smoothEyeRight,
   };
 }
