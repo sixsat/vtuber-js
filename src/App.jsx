@@ -1,4 +1,3 @@
-import './App.css';
 import AvatarViewer from './components/AvatarViewer';
 import FaceTracker from './components/FaceTracker';
 
