@@ -15,7 +15,7 @@ export default function AvatarModel() {
     loader.register((parser) => new VRMLoaderPlugin(parser));
 
     loader.load(
-      '/models/Avatar_A_V1.0.vrm',
+      '/vtuber-js/models/Avatar_A_V1.0.vrm',
       (gltf) => {
         const vrm = gltf.userData.vrm;
         if (!vrm) {
