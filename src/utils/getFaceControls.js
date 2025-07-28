@@ -10,6 +10,8 @@ let smoothViseme = { A: 0, I: 0, U: 0, E: 0, O: 0 };
 let smoothroll = 0;
 let smoothpitch = 0;
 let smoothyaw = 0;
+let smoothBrowLeft = 0;
+let smoothBrowRight = 0;
 
 const getEAR = (top, bottom, left, right) => {
   const vertical = Math.hypot(top.x - bottom.x, top.y - bottom.y);
@@ -34,8 +36,19 @@ export function getFaceControls() {
   const mouthUpper = kp[13];
   const mouthLower = kp[14];
   const faceTop = kp[10];
+  const leftEyeBrow = kp[276];
+  const rightEyeBrow = kp[46];
 
-  if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin || !faceTop) {
+  if (
+    !leftEye ||
+    !rightEye ||
+    !nose ||
+    !mouthUpper ||
+    !mouthLower ||
+    !chin ||
+    !leftEyeBrow ||
+    !rightEyeBrow
+  ) {
     return null;
   }
 
@@ -105,6 +118,24 @@ export function getFaceControls() {
   smoothEyeLeft = smoothEyeLeft * (1 - eyeSmoothing) + normalizeEAR(leftEAR) * eyeSmoothing;
   smoothEyeRight = smoothEyeRight * (1 - eyeSmoothing) + normalizeEAR(rightEAR) * eyeSmoothing;
 
+  // EyeBrows
+  const browSmoothing = 0.1;
+  smoothBrowLeft =
+    smoothBrowLeft * (1 - browSmoothing) +
+    ((leftEyeBrow.y - leftEye.y) / (nose.y - chin.y)) * browSmoothing;
+  smoothBrowRight =
+    smoothBrowRight * (1 - browSmoothing) +
+    ((rightEyeBrow.y - rightEye.y) / (nose.y - chin.y)) * browSmoothing;
+  let averageBrow = (smoothBrowLeft + smoothBrowRight) / 2;
+  // Linear mapping of averageBrow to [0, 5]
+  const browMin = 0.2;
+  const browMax = 0.35;
+  const mappedBrow = THREE.MathUtils.clamp(
+    ((averageBrow - browMin) / (browMax - browMin)) * 2,
+    0,
+    4,
+  );
+
   return {
     mouthOpen: smoothMouthOpen,
     yaw,
@@ -112,6 +143,7 @@ export function getFaceControls() {
     roll,
     eyeLeftClose: smoothEyeLeft,
     eyeRightClose: smoothEyeRight,
+    averageBrow: mappedBrow,
     viseme: smoothViseme,
   };
 }
