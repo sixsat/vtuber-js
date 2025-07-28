@@ -39,7 +39,6 @@ export function getFaceControls() {
   }
 
   const position = nose;
-  
 
   const faceHeight = Math.abs(faceBottom.y - faceTop.y);
 
@@ -62,8 +61,6 @@ export function getFaceControls() {
   const dy = rightEye.y - leftEye.y;
   const yaw = Math.atan2(dy, dx);
   smoothyaw = smoothyaw * (1 - smoothyawcoefficient) + yaw * smoothyawcoefficient;
-
-
 
   const smoothpitchcoefficient = 0.1;
   const midEyes = getAvg(leftEye, rightEye);
