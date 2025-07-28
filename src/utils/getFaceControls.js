@@ -8,6 +8,8 @@ let smoothMouthOpen = 0;
 let smoothroll = 0;
 let smoothpitch = 0;
 let smoothyaw = 0;
+let smoothBrowLeft = 0;
+let smoothBrowRight = 0;
 
 const getEAR = (top, bottom, left, right) => {
   const vertical = Math.hypot(top.x - bottom.x, top.y - bottom.y);
@@ -33,13 +35,14 @@ export function getFaceControls() {
   const mouthLower = kp[14];
   const faceTop = kp[10];
   const faceBottom = kp[152];
+  const leftEyeBrow = kp[276];
+  const rightEyeBrow = kp[46];
 
-  if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin) {
+  if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin || !leftEyeBrow || !rightEyeBrow) {
     return null;
   }
 
   const position = nose;
-
   const faceHeight = Math.abs(faceBottom.y - faceTop.y);
 
   const rawDiff = Math.abs(mouthUpper.y - mouthLower.y);
@@ -52,8 +55,6 @@ export function getFaceControls() {
   const smoothing = 0.25;
   smoothMouthOpen = smoothMouthOpen * (1 - smoothing) + normalizedMouth * smoothing;
   if (smoothMouthOpen < 0.02) smoothMouthOpen = 0;
-
-  // console.log('mouth diff:', rawDiff);
 
   // Head Rotation
   const smoothyawcoefficient = 0.1;
@@ -92,6 +93,16 @@ export function getFaceControls() {
   smoothEyeLeft = smoothEyeLeft * (1 - eyeSmoothing) + normalizeEAR(leftEAR) * eyeSmoothing;
   smoothEyeRight = smoothEyeRight * (1 - eyeSmoothing) + normalizeEAR(rightEAR) * eyeSmoothing;
 
+  // EyeBrows
+  const browSmoothing = 0.1;
+  smoothBrowLeft = smoothBrowLeft * (1 - browSmoothing) + ((leftEyeBrow.y - leftEye.y) / (nose.y - chin.y)) * browSmoothing;
+  smoothBrowRight = smoothBrowRight * (1 - browSmoothing) + ((rightEyeBrow.y - rightEye.y) / (nose.y - chin.y)) * browSmoothing;
+  let averageBrow = (smoothBrowLeft + smoothBrowRight) / 2;
+  // Linear mapping of averageBrow to [0, 5]
+  const browMin = 0.20;
+  const browMax = 0.35;
+  const mappedBrow = THREE.MathUtils.clamp((averageBrow - browMin) / (browMax - browMin) * 2, 0, 5);
+
   return {
     position,
     mouthOpen: smoothMouthOpen,
@@ -100,5 +111,6 @@ export function getFaceControls() {
     roll: smoothroll,
     eyeLeftClose: smoothEyeLeft,
     eyeRightClose: smoothEyeRight,
+    averageBrow: mappedBrow,
   };
 }

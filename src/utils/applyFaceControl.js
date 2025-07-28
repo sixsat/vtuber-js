@@ -3,7 +3,7 @@ export function applyFaceControlsToMesh(vrm, controls) {
     return;
   }
 
-  const { mouthOpen, eyeLeftClose, eyeRightClose, yaw, pitch, roll, position } = controls;
+  const { mouthOpen, eyeLeftClose, eyeRightClose, yaw, pitch, roll, position, averageBrow } = controls;
   
 
 
@@ -20,6 +20,12 @@ export function applyFaceControlsToMesh(vrm, controls) {
       if ('Fcl_EYE_Close_R' in dict) {
         influences[dict['Fcl_EYE_Close_R']] = eyeRightClose;
       }
+      
+      // EyeBrows Position
+      if ('Fcl_BRW_Surprised' in dict) {
+        influences[dict['Fcl_BRW_Surprised']] = averageBrow;
+      }
+     
 
       // Mouth
       if ('Fcl_MTH_A' in dict) {
@@ -27,8 +33,6 @@ export function applyFaceControlsToMesh(vrm, controls) {
       }
 
       // Rotate and translate
-      // console.log(obj);
-
       const head = vrm.humanoid.getNormalizedBoneNode('head');
 
       if (head) {
