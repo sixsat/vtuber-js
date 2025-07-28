@@ -34,13 +34,50 @@ export function getFaceControls() {
   const faceTop = kp[10];
   const faceBottom = kp[152];
 
-  if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin) {
+  if (!leftEye || !rightEye || !nose || !mouthUpper || !mouthLower || !chin || !faceTop) {
     return null;
   }
 
   const position = nose;
-
   const faceHeight = Math.abs(faceBottom.y - faceTop.y);
+
+  // Head orientation calculation
+  const vLeftEye = new THREE.Vector3(leftEye.x, leftEye.y, leftEye.z);
+  const vRightEye = new THREE.Vector3(rightEye.x, rightEye.y, rightEye.z);
+  const vChin = new THREE.Vector3(chin.x, chin.y, chin.z);
+  const vTop = new THREE.Vector3(faceTop.x, faceTop.y, faceTop.z);
+
+  // Head axes
+  const xAxis = vRightEye.clone().sub(vLeftEye).normalize();
+  const yAxis = vChin.clone().sub(vTop).normalize();
+  const zAxis = new THREE.Vector3().crossVectors(xAxis, yAxis).normalize();
+  yAxis.copy(new THREE.Vector3().crossVectors(zAxis, xAxis).normalize());
+
+  // Rotation matrix from axes
+  const rotMat = new THREE.Matrix4();
+  rotMat.makeBasis(xAxis, yAxis, zAxis);
+
+  // Euler angles
+  const euler = new THREE.Euler().setFromRotationMatrix(rotMat, 'YXZ');
+  // Smoothing
+  const smoothCoeff = 0.04; // Even more smoothing for less jiggle
+  smoothyaw = smoothyaw * (1 - smoothCoeff) + -euler.z * smoothCoeff;
+  smoothpitch = smoothpitch * (1 - smoothCoeff) + euler.x * smoothCoeff;
+  smoothroll = smoothroll * (1 - smoothCoeff) + euler.y * smoothCoeff;
+
+  // Clamp small changes to zero to reduce jitter
+  function clampYaw(val) {
+    return Math.abs(val) < 0.01 ? 0 : val;
+  }
+  function clampPitch(val) {
+    return Math.abs(val) < 0.035 ? 0 : val;
+  }
+
+  // Map axes: yaw = turn left/right, pitch = up/down, roll = tilt
+  const yaw = clampYaw(smoothyaw);
+  const pitchOffset = 1.5; // calibrate head looking up/down direction in radians
+  let pitch = clampPitch(smoothpitch - pitchOffset);
+  let roll = smoothroll;
 
   const rawDiff = Math.abs(mouthUpper.y - mouthLower.y);
   const mouthRatio = rawDiff / faceHeight;
@@ -49,33 +86,11 @@ export function getFaceControls() {
   const mouthOpenRaw = Math.max(0, mouthRatio - threshold);
   const normalizedMouth = Math.min(mouthOpenRaw / 0.15, 1);
 
+  // Mouth
   const smoothing = 0.25;
   smoothMouthOpen = smoothMouthOpen * (1 - smoothing) + normalizedMouth * smoothing;
-  if (smoothMouthOpen < 0.02) smoothMouthOpen = 0;
-
-  // console.log('mouth diff:', rawDiff);
-
-  // Head Rotation
-  const smoothyawcoefficient = 0.1;
-  const dx = rightEye.x - leftEye.x;
-  const dy = rightEye.y - leftEye.y;
-  const yaw = Math.atan2(dy, dx);
-  smoothyaw = smoothyaw * (1 - smoothyawcoefficient) + yaw * smoothyawcoefficient;
-
-  const smoothpitchcoefficient = 0.1;
-  const midEyes = getAvg(leftEye, rightEye);
-  const dyPitch = chin.y - midEyes.y;
-  const dzPitch = chin.z - midEyes.z;
-  const pitch = Math.atan2(dyPitch, dzPitch);
-  smoothpitch = smoothpitch * (1 - smoothpitchcoefficient) + pitch * smoothpitchcoefficient;
-
-  const smoothrollcoefficient = 0.05;
-  const dxRoll = chin.x - midEyes.x;
-  const dzRoll = chin.z - midEyes.z;
-  const roll = Math.atan2(dxRoll, dzRoll);
-  let new_smoothroll = smoothroll * (1 - smoothrollcoefficient) + roll * smoothrollcoefficient;
-  if (Math.abs(smoothroll - new_smoothroll) < 0.5) {
-    smoothroll = new_smoothroll;
+  if (smoothMouthOpen < 0.02) {
+    smoothMouthOpen = 0;
   }
 
   // Eye Aspect Ratio (EAR) per side
@@ -95,9 +110,9 @@ export function getFaceControls() {
   return {
     position,
     mouthOpen: smoothMouthOpen,
-    yaw: smoothyaw,
-    pitch: smoothpitch,
-    roll: smoothroll,
+    yaw,
+    pitch,
+    roll,
     eyeLeftClose: smoothEyeLeft,
     eyeRightClose: smoothEyeRight,
   };
